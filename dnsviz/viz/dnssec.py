@@ -1189,6 +1189,14 @@ class DNSAuthGraph:
                         if target not in trace:
                             cname_nodes.extend(self.graph_rrset_auth(cname_obj, target, rdtype, trace + [target]))
 
+        mx_nodes = []
+        if name_obj.analysis_type != ANALYSIS_TYPE_RECURSIVE:
+            if rdtype == dns.rdatatype.MX:
+                for target, mx_obj in name_obj.mx_targets.items():
+                    if mx_obj is not None:
+                        if target not in trace:
+                            mx_nodes.extend(self.graph_rrset_auth(mx_obj, target, dns.rdatatype.A, trace + [target]))
+
         query = name_obj.queries[(name, rdtype)]
         node_to_cname_mapping = set()
         for rrset_info in query.answer_info:
@@ -1240,6 +1248,12 @@ class DNSAuthGraph:
             elif rdtype == dns.rdatatype.CDS:
                 if name == zone_obj.name:
                     self.add_cds(zone_obj, rrset_info, my_nodes)
+
+            elif rdtype == dns.rdatatype.MX:
+                for my_node in my_nodes:
+                    target=rrset_info.rrset[0].exchange
+                    for mx_node in mx_nodes:
+                        self.add_alias(my_node, mx_node)
 
             self.processed_rrsets[(my_name, rdtype)] += my_nodes
 
