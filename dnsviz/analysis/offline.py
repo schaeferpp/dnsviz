@@ -2547,6 +2547,8 @@ class OfflineDomainNameAnalysis(OnlineDomainNameAnalysis):
                                 supported_algs, ignore_rfc8624, ignore_rfc9276)
 
     def _populate_inconsistent_negative_dnssec_responses(self, neg_response_info, neg_status, ignore_rfc9276):
+        if neg_status is None:
+            return
         for nsec_status in neg_status[neg_response_info]:
             queries_by_error = {
                     Errors.ExistingTypeNotInBitmapNSEC3: [],
